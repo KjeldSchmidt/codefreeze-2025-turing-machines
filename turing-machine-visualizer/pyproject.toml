@@ -11,6 +11,44 @@ python = ">=3.9,<3.14"
 pyside6 = "^6.8.1.1"
 
 
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.9.1"
+mypy = "^1.14.1"
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    # These rules are inherently in conflict with others, so we picked our preference.
+    "D203", # one-blank-line-before-class (docstring placement)
+    "D", # No desire for docstrings here
+    "T201", # calling `print` is fine actually
+
+    # These rules should never occur if we use the ruff formater
+    # Disabling them is recommended here: https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
+    "W191", "E111", "E114", "E117", "D206", "D300", "Q000", "Q001", "Q002", "Q003", "COM812", "COM819", "ISC001", "ISC002",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+check_untyped_defs = true
+disallow_untyped_defs = true
+disallow_any_explicit = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_return_any = true
+warn_unreachable = true
+strict_equality = true
+strict = true
+show_error_context = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+pretty = true
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

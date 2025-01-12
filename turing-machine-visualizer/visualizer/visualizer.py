@@ -1,21 +1,27 @@
 import sys
 import textwrap
+from collections.abc import Mapping
 from dataclasses import dataclass
+from typing import Literal, TypeAlias, cast, get_args
 
-from PySide6.QtWidgets import (
-    QApplication, QMainWindow, QGraphicsView, QGraphicsScene, QGraphicsRectItem, QGraphicsTextItem, QVBoxLayout, QWidget
-)
 from PySide6.QtCore import QSocketNotifier
 from PySide6.QtGui import QBrush, QColor
+from PySide6.QtWidgets import (
+    QApplication,
+    QGraphicsRectItem,
+    QGraphicsScene,
+    QGraphicsTextItem,
+    QGraphicsView,
+    QMainWindow,
+    QVBoxLayout,
+    QWidget,
+)
 
 window_height = 600
 window_width = 800
 
-move_to_tape_head_position_change = {
-    ">": 1,
-    "-": 0,
-    "<": -1
-}
+ValidMove: TypeAlias = Literal[">", "-", "<"]
+move_to_tape_head_position_change: Mapping[ValidMove, int] = {">": 1, "-": 0, "<": -1}
 
 
 @dataclass
@@ -23,7 +29,7 @@ class TuringCell:
     rect: QGraphicsRectItem
     text: QGraphicsTextItem
 
-    def setPlainText(self, new_text):
+    def set_plain_text(self, new_text: str) -> None:
         self.text.setPlainText(new_text)
 
         bounding_box = self.rect.rect()
@@ -44,7 +50,7 @@ class TuringCell:
 
 
 class TuringMachineVisualizer(QMainWindow):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle("Turing Machine Visualizer")
         self.resize(window_width, window_height)
@@ -73,7 +79,7 @@ class TuringMachineVisualizer(QMainWindow):
         state_font = self.state_text.font()
         state_font.setPointSize(24)
         self.state_text.setFont(state_font)
-        self.state_text.setX(self.cell_width/2 - self.state_text.boundingRect().width()/2)
+        self.state_text.setX(self.cell_width / 2 - self.state_text.boundingRect().width() / 2)
         self.scene.addItem(self.state_text)
 
         # Simulated Turing machine state
@@ -88,10 +94,10 @@ class TuringMachineVisualizer(QMainWindow):
         self.right_margin = QGraphicsRectItem(100000, 0, 1, 1)
         self.scene.addItem(self.right_margin)
 
-        self.notifier = QSocketNotifier(sys.stdin.fileno(), QSocketNotifier.Read)
+        self.notifier = QSocketNotifier(sys.stdin.fileno(), QSocketNotifier.Type.Read)
         self.notifier.activated.connect(self.handle_stdin)
 
-    def handle_stdin(self):
+    def handle_stdin(self) -> None:
         line = sys.stdin.readline().strip()
         orange_stdout = "\033[0;33m"
         uncolored_stdout = "\033[0m"
@@ -102,36 +108,41 @@ class TuringMachineVisualizer(QMainWindow):
         # Well, not in our case
         if line == "" and not sys.stdin.isatty():
             self.notifier.setEnabled(False)
-            print(textwrap.dedent("""\
+            print(
+                textwrap.dedent("""\
                 End of input reached - stop receiving new input
-                
-                If this was not your intention, please note that this program cannot
-                currently handle newlines if a process has been connected via pipe."""
-            ))
-            return
 
+                If this was not your intention, please note that this program cannot
+                currently handle newlines if a process has been connected via pipe.""")
+            )
+            return
 
         try:
             new_symbol, move, new_state = line.strip().split()
         except ValueError:
-            print(textwrap.dedent(f"""
+            print(
+                textwrap.dedent(f"""
             {orange_stdout}Input needs to be given as:
-            
+
             new_cell_value direction new_state_name
-            
-            where direction is either `<`, `>` or `-`, which makes the tapehead 
+
+            where direction is either `<`, `>` or `-`, which makes the tapehead
             move left, right, or not at all respectively.
-            
-            new_cell_value and new_state_name can be arbitrary strings{uncolored_stdout}"""))
+
+            new_cell_value and new_state_name can be arbitrary strings{uncolored_stdout}""")
+            )
             return
 
-        if move not in move_to_tape_head_position_change.keys():
-            print(f"{orange_stdout}Move was not given as `<`, `>` or `-`. Any other values are invalid.{uncolored_stdout}")
+        if move not in get_args(ValidMove):
+            print(
+                f"{orange_stdout}Move was not given as `<`, `>` or `-`. Any other values are invalid.{uncolored_stdout}"
+            )
             return
+        move = cast(ValidMove, move)
 
         self.update_tape(new_symbol, move, new_state)
 
-    def create_cell(self, cell_index):
+    def create_cell(self, cell_index: int) -> None:
         cell_x = cell_index * self.cell_width
         cell_y = 100
         rect = QGraphicsRectItem(cell_x, cell_y, self.cell_width, self.cell_width)
@@ -146,11 +157,11 @@ class TuringMachineVisualizer(QMainWindow):
 
         self.tape_cells[cell_index] = TuringCell(rect, text)
 
-    def update_tape(self, new_symbol, move, new_state):
+    def update_tape(self, new_symbol: str, move: ValidMove, new_state: str) -> None:
         previous_cell = self.tape_cells[self.head_position]
 
         # Change current symbol, unhighlight tapehead
-        previous_cell.setPlainText(new_symbol)
+        previous_cell.set_plain_text(new_symbol)
         previous_cell.rect.setBrush(QBrush(QColor("white")))
 
         # Move tapehead
@@ -169,7 +180,9 @@ class TuringMachineVisualizer(QMainWindow):
 
         # Update state display
         self.state_text.setPlainText(new_state)
-        self.state_text.setX((self.head_position + 0.5)*self.cell_width - 0.5 * self.state_text.boundingRect().width())
+        self.state_text.setX(
+            (self.head_position + 0.5) * self.cell_width - 0.5 * self.state_text.boundingRect().width()
+        )
 
 
 if __name__ == "__main__":

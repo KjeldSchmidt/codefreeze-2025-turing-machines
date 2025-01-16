@@ -185,10 +185,14 @@ class TuringMachineVisualizer(QMainWindow):
         )
 
 
-if __name__ == "__main__":
+def main():
     app = QApplication(sys.argv)
 
     visualizer = TuringMachineVisualizer()
     visualizer.show()
 
     app.exec()
+
+
+if __name__ == "__main__":
+    main()

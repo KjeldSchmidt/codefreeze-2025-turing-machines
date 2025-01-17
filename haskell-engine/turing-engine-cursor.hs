@@ -3,6 +3,7 @@ import System.Environment (getArgs)
 import Data.Map (Map)
 import Data.Maybe (fromMaybe)
 import Control.Monad (mplus)
+import System.IO (hFlush, stdout)
 
 data Symbol = Symbol String | Any deriving (Show, Eq, Ord)
 newtype State = State String deriving (Show, Eq, Ord)
@@ -14,37 +15,62 @@ type Tape = Map Int Symbol
 
 runTuringMachine :: State -> Transitions -> IO ()
 runTuringMachine initialState transitions = do
+    putStrLn "Press Enter to execute one step, or enter a number to execute that many steps."
+    hFlush stdout
     let initialTape = Map.singleton 0 (Symbol "")
-    loop initialTape initialState 0
+    loop initialTape initialState 0 0
     where
-        loop :: Tape -> State -> Int -> IO ()
-        loop tape currentState headPos = do
-            let currentSymbol = fromMaybe (Symbol "") $ Map.lookup headPos tape
-            case findTransition (currentState, currentSymbol) transitions of
-                Nothing -> do
-                    putStrLn "Machine halted - no transition found"
-                Just (nextState, nextSymbol, direction) -> do
-                    
-                    -- Keep existing symbol if nextSymbol is Any
-                    let symbolToWrite = case nextSymbol of
-                            Any -> currentSymbol
-                            _ -> nextSymbol
-                    let newTape = Map.insert headPos symbolToWrite tape
-                    
-                    let dirSymbol = directionToSymbol direction
-                    -- Print the transition output in required format
-                    let sym = case nextSymbol of
-                            Symbol "" -> "_"
-                            Symbol s -> s
-                            Any -> "*"
-                    let State st = nextState
-                    putStrLn $ unwords [sym, dirSymbol, st]
-                    
-                    let newHeadPos = case direction of
-                            MoveLeft -> headPos - 1
-                            MoveRight -> headPos + 1
-                            Stay -> headPos
-                    loop newTape nextState newHeadPos
+        loop :: Tape -> State -> Int -> Int -> IO ()
+        loop tape state pos steps = do
+            input <- getLine
+            case executeStep tape state pos transitions of
+                Nothing -> 
+                    putStrLn $ "Machine halted - no transition found after " ++ show steps ++ " steps"
+                Just (newTape, nextState, newPos, output) -> do
+                    putStrLn output
+                    hFlush stdout
+                    case reads input of
+                        [(n, "")] -> executeSteps (n-1) newTape nextState newPos (steps + 1)
+                        _ -> loop newTape nextState newPos (steps + 1)
+
+        executeSteps :: Int -> Tape -> State -> Int -> Int -> IO ()
+        executeSteps 0 tape state pos steps = loop tape state pos steps
+        executeSteps n tape state pos steps = 
+            case executeStep tape state pos transitions of
+                Nothing -> 
+                    putStrLn $ "Machine halted - no transition found after " ++ show steps ++ " steps"
+                Just (newTape, nextState, newPos, output) -> do
+                    putStrLn output
+                    hFlush stdout
+                    executeSteps (n-1) newTape nextState newPos (steps + 1)
+
+executeStep :: Tape -> State -> Int -> Transitions -> Maybe (Tape, State, Int, String)
+executeStep tape state pos transitions = do
+    let currentSymbol = fromMaybe (Symbol "") $ Map.lookup pos tape
+    (nextState, nextSymbol, direction) <- findTransition (state, currentSymbol) transitions
+    
+    let symbolToWrite = case nextSymbol of
+            Any -> currentSymbol
+            _ -> nextSymbol
+    let newTape = Map.insert pos symbolToWrite tape
+    
+    let dirSymbol = directionToSymbol direction
+    let sym = case nextSymbol of
+            Symbol "" -> "_"
+            Symbol s -> s
+            Any -> case currentSymbol of
+                Symbol "" -> "_"
+                Symbol s -> s
+                Any -> "*"
+    let State st = nextState
+    let output = unwords [sym, dirSymbol, st]
+    
+    let newPos = case direction of
+            MoveLeft -> pos - 1
+            MoveRight -> pos + 1
+            Stay -> pos
+    
+    return (newTape, nextState, newPos, output)
 
 main :: IO ()
 main = do

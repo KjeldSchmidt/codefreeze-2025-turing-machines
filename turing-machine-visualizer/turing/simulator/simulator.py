@@ -56,6 +56,5 @@ class TuringMachine:
         self._tape_position += 1 if transition_result.direction_to_move == ">" else -1
         print(
             f"{transition_result.symbol_to_write} {transition_result.direction_to_move} {transition_result.state_to_activate}",
-            flush=True
-
+            flush=True,
         )

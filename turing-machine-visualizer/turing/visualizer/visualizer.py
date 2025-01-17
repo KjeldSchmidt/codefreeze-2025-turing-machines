@@ -178,7 +178,7 @@ class TuringMachineVisualizer(QMainWindow):
         cell_x = cell_index * self.cell_width
         cell_y = 100
         rect = QGraphicsRectItem(cell_x, cell_y, self.cell_width, self.cell_width)
-        rect.setBrush(QBrush(QColor("yellow")))
+        rect.setBrush(QBrush(QColor("white")))
         rect.setPen(QColor("black"))
         self.scene.addItem(rect)
 

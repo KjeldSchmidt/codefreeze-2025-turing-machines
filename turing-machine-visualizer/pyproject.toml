@@ -57,3 +57,10 @@ pretty = true
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.poe.tasks]
+lint = "ruff check ."
+fmt = "ruff format ."
+type-check = "mypy ."
+visualize = "visualize"
+
+

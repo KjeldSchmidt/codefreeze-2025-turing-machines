@@ -144,7 +144,7 @@ class TuringMachineVisualizer(QMainWindow):
             return
 
         if line.startswith("state: ") and self.step_count == 0:
-            state = line.lstrip("state: ").strip()
+            state = line.removeprefix("state: ").strip()
             self.state_text.setPlainText(state)
             self.state_text.setX(self.cell_width / 2 - self.state_text.boundingRect().width() / 2)
             return
@@ -155,12 +155,12 @@ class TuringMachineVisualizer(QMainWindow):
             print(
                 textwrap.dedent(f"""
                 {orange_stdout}Input needs to be given as:
-    
+
                 new_cell_value direction new_state_name
-    
+
                 where direction is either `<`, `>` or `-`, which makes the tapehead
                 move left, right, or not at all respectively.
-    
+
                 new_cell_value and new_state_name can be arbitrary strings{uncolored_stdout}""")
             )
             return
@@ -225,7 +225,7 @@ class TuringMachineVisualizer(QMainWindow):
         )
 
 
-def main():
+def main() -> None:
     app = QApplication(sys.argv)
 
     visualizer = TuringMachineVisualizer()

@@ -29,13 +29,13 @@ class TuringMachine:
 
         self.nonfinal_states = set(map(lambda x: x[0], self.state_transitions.keys()))
 
-    def is_in_nonfinal_state(self):
+    def is_in_nonfinal_state(self) -> bool:
         return self.state in self.nonfinal_states
 
-    def get_tape_contents(self):
+    def get_tape_contents(self) -> tuple[str, ...]:
         return tuple(map(lambda x: x[1], sorted(self.tape.items())))
 
-    def run_to_final_state(self):
+    def run_to_final_state(self) -> None:
         while self.is_in_nonfinal_state():
             self.step()
 

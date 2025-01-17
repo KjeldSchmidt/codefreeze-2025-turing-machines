@@ -3,7 +3,7 @@ import time
 from turing.simulator.simulator import TuringMachine
 
 
-def main():
+def main() -> None:
     tape_symbols = set("Hello World Codefreeze")
     transitions = {
         ("q0", ""): ("q1", "H", ">"),

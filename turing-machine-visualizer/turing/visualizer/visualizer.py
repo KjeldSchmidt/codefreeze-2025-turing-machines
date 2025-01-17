@@ -102,6 +102,9 @@ class TuringMachineVisualizer(QMainWindow):
         orange_stdout = "\033[0;33m"
         uncolored_stdout = "\033[0m"
 
+        if line.startswith("[info]"):
+            return
+
         # Stop handling input if a pipe is closed.
         # This cannot be the best way to detect this, right?
         # Sometimes a pipe just pipes in a newline???
@@ -117,19 +120,37 @@ class TuringMachineVisualizer(QMainWindow):
             )
             return
 
+        if line.startswith("state+tape: ") and self.step_count == 0:
+            state_and_tape_symbols = line.split(":")[1].strip().split()
+            state, tape_symbols = state_and_tape_symbols[0], state_and_tape_symbols[1:]
+
+            self.state_text.setPlainText(state)
+            self.state_text.setX(self.cell_width / 2 - self.state_text.boundingRect().width() / 2)
+
+            for index, symbol in enumerate(tape_symbols):
+                self.create_cell(index, symbol)
+
+            return
+
+        if line.startswith("state: ") and self.step_count == 0:
+            state = line.lstrip("state: ").strip()
+            self.state_text.setPlainText(state)
+            self.state_text.setX(self.cell_width / 2 - self.state_text.boundingRect().width() / 2)
+            return
+
         try:
             new_symbol, move, new_state = line.strip().split()
         except ValueError:
             print(
                 textwrap.dedent(f"""
-            {orange_stdout}Input needs to be given as:
-
-            new_cell_value direction new_state_name
-
-            where direction is either `<`, `>` or `-`, which makes the tapehead
-            move left, right, or not at all respectively.
-
-            new_cell_value and new_state_name can be arbitrary strings{uncolored_stdout}""")
+                {orange_stdout}Input needs to be given as:
+    
+                new_cell_value direction new_state_name
+    
+                where direction is either `<`, `>` or `-`, which makes the tapehead
+                move left, right, or not at all respectively.
+    
+                new_cell_value and new_state_name can be arbitrary strings{uncolored_stdout}""")
             )
             return
 
@@ -142,7 +163,7 @@ class TuringMachineVisualizer(QMainWindow):
 
         self.update_tape(new_symbol, move, new_state)
 
-    def create_cell(self, cell_index: int) -> None:
+    def create_cell(self, cell_index: int, symbol: str = "") -> None:
         cell_x = cell_index * self.cell_width
         cell_y = 100
         rect = QGraphicsRectItem(cell_x, cell_y, self.cell_width, self.cell_width)
@@ -155,7 +176,9 @@ class TuringMachineVisualizer(QMainWindow):
         text.setPos(cell_x + 10, cell_y + 5)
         self.scene.addItem(text)
 
-        self.tape_cells[cell_index] = TuringCell(rect, text)
+        turing_cell = TuringCell(rect, text)
+        turing_cell.set_plain_text(symbol)
+        self.tape_cells[cell_index] = turing_cell
 
     def update_tape(self, new_symbol: str, move: ValidMove, new_state: str) -> None:
         previous_cell = self.tape_cells[self.head_position]

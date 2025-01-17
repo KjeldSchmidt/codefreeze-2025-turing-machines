@@ -6,18 +6,19 @@ import Control.Monad (mplus)
 import System.IO (hFlush, stdout)
 
 data Symbol = Symbol String | Any deriving (Show, Eq, Ord)
-newtype State = State String deriving (Show, Eq, Ord)
+newtype State = State String deriving (Eq, Ord)
+instance Show State where
+    show (State s) = s
 data Direction = MoveLeft | MoveRight | Stay deriving (Show)
 
 type Transition = ((State, Symbol), (State, Symbol, Direction))
 type Transitions = Map (State, Symbol) (State, Symbol, Direction)
 type Tape = Map Int Symbol
 
-runTuringMachine :: State -> Transitions -> IO ()
-runTuringMachine initialState transitions = do
-    putStrLn "Press Enter to execute one step, or enter a number to execute that many steps."
+runTuringMachine :: State -> Transitions -> Tape -> IO ()
+runTuringMachine initialState transitions initialTape = do
+    putStrLn "[info] Press Enter to execute one step, or enter a number to execute that many steps."
     hFlush stdout
-    let initialTape = Map.singleton 0 (Symbol "")
     loop initialTape initialState 0 0
     where
         loop :: Tape -> State -> Int -> Int -> IO ()
@@ -79,8 +80,17 @@ main = do
         [fileName] -> do
             fileContent <- readFile fileName
             let (initialState, transitions) = parseMapFromFile fileContent
-            runTuringMachine initialState transitions
-        _ -> putStrLn "Usage: program <filename>"
+            putStrLn $ "state: " ++ show initialState
+            hFlush stdout
+            runTuringMachine initialState transitions Map.empty
+        [fileName, initialTapeStr] -> do
+            fileContent <- readFile fileName
+            let (initialState, transitions) = parseMapFromFile fileContent
+                initialTape = parseInitialTape initialTapeStr
+            putStrLn $ "state+tape: " ++ show initialState ++ " " ++ initialTapeStr
+            hFlush stdout
+            runTuringMachine initialState transitions initialTape
+        _ -> putStrLn "Usage: program <filename> [initial tape]"
 
 
 parseMapFromFile :: String -> (State, Transitions)
@@ -125,3 +135,10 @@ directionToSymbol :: Direction -> String
 directionToSymbol MoveLeft = "<"
 directionToSymbol MoveRight = ">"
 directionToSymbol Stay = "-"
+
+
+parseInitialTape :: String -> Tape
+parseInitialTape str = 
+    Map.fromList $ zip [0..] $ map (Symbol . symbolStr) $ words str
+    where symbolStr "_" = ""
+          symbolStr s = s

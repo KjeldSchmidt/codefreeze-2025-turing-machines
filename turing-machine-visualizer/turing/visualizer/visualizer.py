@@ -82,6 +82,17 @@ class TuringMachineVisualizer(QMainWindow):
         self.state_text.setX(self.cell_width / 2 - self.state_text.boundingRect().width() / 2)
         self.scene.addItem(self.state_text)
 
+        # Step counter
+        self.step_count = 0
+        self.step_count_text = QGraphicsTextItem(str(self.step_count))
+        self.step_count_text.setDefaultTextColor(QColor("black"))
+        state_font = self.step_count_text.font()
+        state_font.setPointSize(24)
+        self.step_count_text.setFont(state_font)
+        self.step_count_text.setX(self.cell_width / 2 - self.step_count_text.boundingRect().width() / 2)
+        self.step_count_text.setY(self.cell_width * 4)
+        self.scene.addItem(self.step_count_text)
+
         # Simulated Turing machine state
         self.head_position = 0
 
@@ -205,6 +216,12 @@ class TuringMachineVisualizer(QMainWindow):
         self.state_text.setPlainText(new_state)
         self.state_text.setX(
             (self.head_position + 0.5) * self.cell_width - 0.5 * self.state_text.boundingRect().width()
+        )
+
+        self.step_count += 1
+        self.step_count_text.setPlainText(str(self.step_count))
+        self.step_count_text.setX(
+            (self.head_position + 0.5) * self.cell_width - 0.5 * self.step_count_text.boundingRect().width()
         )
 
 

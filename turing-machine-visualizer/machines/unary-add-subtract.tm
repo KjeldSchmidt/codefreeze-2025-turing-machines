@@ -1,38 +1,38 @@
 q+
 
-q+ | q| |' >
+q+ | q+ToEnd |' >
 q+ - q- - >
 q+ + q+ + >
 q+ = qF = -
 
-q| | q| | >
-q| - q| - >
-q| + q| + >
-q| = q| = >
-q| _ qMoveLeftPastResult | <
+q+ToEnd | q+ToEnd | >
+q+ToEnd - q+ToEnd - >
+q+ToEnd + q+ToEnd + >
+q+ToEnd = q+ToEnd = >
+q+ToEnd _ qMovePlusLeftPastResult | <
 
-q- | qMoveToEnd |' >
+q- | q-ToEnd |' >
 q- - q- - >
 q- + q+ + >
 q- = qF = -
 
-qMoveToEnd | qMoveToEnd | >
-qMoveToEnd + qMoveToEnd + >
-qMoveToEnd = qMoveToEnd = >
-qMoveToEnd _ qDel _ <
+q-ToEnd | q-ToEnd | >
+q-ToEnd + q-ToEnd + >
+q-ToEnd = q-ToEnd = >
+q-ToEnd _ qDel _ <
 
 qDel | qMoveMinusLeftPastResult _ <
 
-qMoveLeftPastResult | qMoveLeftPastResult | <
-qMoveLeftPastResult = qMoveLeftToMarked = <
+qMovePlusLeftPastResult | qMovePlusLeftPastResult | <
+qMovePlusLeftPastResult = qMovePlusLeftToMarked = <
 
 qMoveMinusLeftPastResult | qMoveMinusLeftPastResult | <
 qMoveMinusLeftPastResult = qMoveMinusLeftToMarked = <
 
-qMoveLeftToMarked | qMoveLeftToMarked | <
-qMoveLeftToMarked - qMoveLeftToMarked - <
-qMoveLeftToMarked + qMoveLeftToMarked + <
-qMoveLeftToMarked |' q+ |' >
+qMovePlusLeftToMarked | qMovePlusLeftToMarked | <
+qMovePlusLeftToMarked - qMovePlusLeftToMarked - <
+qMovePlusLeftToMarked + qMovePlusLeftToMarked + <
+qMovePlusLeftToMarked |' q+ |' >
 
 qMoveMinusLeftToMarked | qMoveMinusLeftToMarked | <
 qMoveMinusLeftToMarked + qMoveMinusLeftToMarked + <
